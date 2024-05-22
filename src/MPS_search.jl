@@ -187,19 +187,19 @@ function _apply_gates(
         end
 
         if bond_dimension(ρ) > Dcut
-            ρ = SpinGlassTensors.compress(ρ, Dcut, var_ϵ, sweeps)
+            ρ = compress(ρ, Dcut, var_ϵ, sweeps)
             is_right = true
         end
     end
 
-    if !is_right SpinGlassTensors.canonise!(ρ, :right) end
+    if !is_right canonise!(ρ, :right) end
     ρ
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function SpinGlassTensors.MPS(
+function MPS(
     ig::IsingGraph, Dcut::Int, var_ϵ::Number, sweeps::Int, schedule::Vector{<:Number}
 )
     ρ = HadamardMPS(ig)
@@ -212,7 +212,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function SpinGlassTensors.MPS(
+function MPS(
     ig::IsingGraph,
     Dcut::Int,
     var_ϵ::Real,
