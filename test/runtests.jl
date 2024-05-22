@@ -1,6 +1,8 @@
 using Test
 using SpinGlassMPS
 using SpinGlassNetworks
+using MetaGraphs
+using LinearAlgebra
 
 my_tests = [
     "MPS_search.jl",

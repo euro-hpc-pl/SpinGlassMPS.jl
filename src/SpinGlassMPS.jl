@@ -1,5 +1,4 @@
 module SpinGlassMPS
-export MPS, AbstractMPS
 using SpinGlassTensors
 using SpinGlassNetworks
 using DocStringExtensions
@@ -10,6 +9,7 @@ using LabelledGraphs
 using MetaGraphs
 using Graphs
 using LinearAlgebra
+using Memoization
 
 include("base.jl")
 include("compressions.jl")

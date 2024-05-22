@@ -26,8 +26,6 @@ function compress!(
     # Initial guess - truncated ϕ
     ψ = copy(ϕ)
     _right_sweep!(ϕ, Dcut, args...)
-    @show typeof(ψ)
-    @show typeof(ϕ)
     # Create environment
     env = left_env(ϕ, ψ)
 
@@ -35,17 +33,17 @@ function compress!(
     overlap = Inf
     overlap_before = -Inf
 
-    @info "Compressing state down to" Dcut
+    # @info "Compressing state down to" Dcut
 
     for sweep ∈ 1:max_sweeps
         _left_sweep_var!!(ϕ, env, ψ, args...)
         overlap = _right_sweep_var!!(ϕ, env, ψ, args...)
 
         diff = abs(overlap_before - abs(overlap))
-        @info "Convergence" diff
+        # @info "Convergence" diff
 
         if diff < tol
-            @info "Finished in $sweep sweeps of $(max_sweeps)."
+            # @info "Finished in $sweep sweeps of $(max_sweeps)."
             return overlap
         else
             overlap_before = overlap

@@ -122,6 +122,16 @@ function LinearAlgebra.dot(ϕ::AbstractMPS, O::Union{Vector,NTuple}, ψ::Abstrac
     tr(C)
 end
 
+function LinearAlgebra.dot(ψ::MPS, state::Union{Vector, NTuple}) 
+    C = I
+
+    for (M, σ) ∈ zip(ψ, state)        
+        i = idx(σ)
+        C = M[:, i, :]' * (C * M[:, i, :])
+    end
+    tr(C)
+end
+
 
 # function LinearAlgebra.dot(O::AbstractMPO, ψ::AbstractMPS)
 #     S = promote_type(eltype(ψ), eltype(O))
