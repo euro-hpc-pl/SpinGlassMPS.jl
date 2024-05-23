@@ -5,9 +5,9 @@
         ig = ising_graph(instance)
         rank = Tuple(values(get_prop(ig, :rank)))
 
-        β = 2.
-        dβ = β / 5.
-        schedule = fill(dβ, Int(ceil(β/dβ)))
+        β = 2.0
+        dβ = β / 5.0
+        schedule = fill(dβ, Int(ceil(β / dβ)))
 
         ϵ = 1E-8
         Dcut = 32
@@ -77,7 +77,7 @@
                     end
                 end
                 @testset "Results from MPS-based search agree with brute-force" begin
-                    for max_states ∈ [1, N, 2*N, 3*N, N^2-3, N^2-2, N^2] # problem for N^2-1
+                    for max_states ∈ [1, N, 2 * N, 3 * N, N^2 - 3, N^2 - 2, N^2] # problem for N^2-1
                         states, _ = solve(rψ, max_states)
                         en = energy(states, ig)
                         sp = brute_force(ig, num_states = max_states)

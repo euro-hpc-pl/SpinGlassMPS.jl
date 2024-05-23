@@ -117,15 +117,16 @@ function LinearAlgebra.dot(ϕ::AbstractMPS, O::Union{Vector,NTuple}, ψ::Abstrac
     C = similar(ψ[1], S, (1, 1))
     C[1, 1] = one(S)
     for (A, W, B) ∈ zip(ϕ, O, ψ)
-        @tensor order = (α, η, β, σ) C[x, y] := conj(A)[β, σ, x] * W[σ, η] * C[β, α] * B[α, η, y]
+        @tensor order = (α, η, β, σ) C[x, y] :=
+            conj(A)[β, σ, x] * W[σ, η] * C[β, α] * B[α, η, y]
     end
     tr(C)
 end
 
-function LinearAlgebra.dot(ψ::MPS, state::Union{Vector, NTuple}) 
+function LinearAlgebra.dot(ψ::MPS, state::Union{Vector,NTuple})
     C = I
 
-    for (M, σ) ∈ zip(ψ, state)        
+    for (M, σ) ∈ zip(ψ, state)
         i = idx(σ)
         C = M[:, i, :]' * (C * M[:, i, :])
     end

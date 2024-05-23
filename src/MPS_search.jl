@@ -1,6 +1,4 @@
-export
-       solve,
-       low_energy_spectrum
+export solve, low_energy_spectrum
 
 """
 $(TYPEDSIGNATURES)
@@ -23,7 +21,7 @@ function low_energy_spectrum(
     dβ::Real,
     β::Real,
     schedule::Symbol,
-    num_states::Int
+    num_states::Int,
 )
     igp = prune(ig)
     ψ = MPS(igp, Dcut, var_ϵ, max_sweeps, dβ, β, schedule)
@@ -45,7 +43,9 @@ function solve(ψ::AbstractMPS, keep::Int)
     lpCut = -Inf
     k = 1
 
-    if keep < prod(rank(ψ)) keep_extra += 1 end
+    if keep < prod(rank(ψ))
+        keep_extra += 1
+    end
 
     lprob = zeros(T, k)
     states = fill([], 1, k)
@@ -63,7 +63,7 @@ function solve(ψ::AbstractMPS, keep::Int)
             L = left_env[:, j]
             for σ ∈ local_basis(d)
                 m = idx(σ)
-                 LL[:, j, m] = L' * M[:, m, :]
+                LL[:, j, m] = L' * M[:, m, :]
                 pdo[j, m] = dot(LL[:, j, m], LL[:, j, m])
                 config[:, j, m] = vcat(states[:, j]..., σ)
                 LL[:, j, m] = LL[:, j, m] / sqrt(pdo[j, m])
@@ -72,12 +72,12 @@ function solve(ψ::AbstractMPS, keep::Int)
             lpdo[j, :] = log.(pdo[j, :]) .+ lprob[j]
         end
 
-        perm = collect(1 : k * d)
+        perm = collect(1:k*d)
         k = k * d
 
         if k > keep_extra
             k = keep_extra
-            partialsortperm!(perm, vec(lpdo), 1:k, rev=true)
+            partialsortperm!(perm, vec(lpdo), 1:k, rev = true)
             lprob = vec(lpdo)[perm]
             lpCut < last(lprob) ? lpCut = last(lprob) : ()
         end
@@ -107,7 +107,12 @@ end
 $(TYPEDSIGNATURES)
 """
 function _apply_exponent!(
-    ψ::AbstractMPS, ig::LabelledGraph, dβ::Number, i::Int, j::Int, last::Int
+    ψ::AbstractMPS,
+    ig::LabelledGraph,
+    dβ::Number,
+    i::Int,
+    j::Int,
+    last::Int,
 )
     M = ψ[j]
     D = typeof(M).name.wrapper(I(physical_dim(ψ, i)))
@@ -115,7 +120,7 @@ function _apply_exponent!(
     J = get_prop(ig, i, j, :J)
     σ = local_basis(ψ, i)
     η = local_basis(ψ, j)'
-    C = exp.(-0.5 * dβ * σ *J * η)
+    C = exp.(-0.5 * dβ * σ * J * η)
 
     if j == last
         @cast M̃[(x, a), σ, b] := C[x, σ] * M[a, σ, b]
@@ -148,7 +153,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function purifications(χ::T, ϕ::T) where {T <: AbstractMPS}
+function purifications(χ::T, ϕ::T) where {T<:AbstractMPS}
     S = promote_type(eltype(χ), eltype(ϕ))
     ψ = MPS(S, length(ϕ))
     for (i, (A, B)) ∈ enumerate(zip(χ, ϕ))
@@ -172,7 +177,12 @@ _holes(l::Int, nbrs::Vector) = setdiff(l+1:last(nbrs), nbrs)
 $(TYPEDSIGNATURES)
 """
 function _apply_gates(
-    ρ::AbstractMPS, ig::IsingGraph, Dcut::Int, var_ϵ::Number, sweeps::Int, dβ::Number
+    ρ::AbstractMPS,
+    ig::IsingGraph,
+    Dcut::Int,
+    var_ϵ::Number,
+    sweeps::Int,
+    dβ::Number,
 )
     is_right = true
     for i ∈ 1:nv(ig)
@@ -182,8 +192,12 @@ function _apply_gates(
         nbrs = unique_neighbors(ig, i)
         if !isempty(nbrs)
             _apply_projector!(ρ, i)
-            for j ∈ nbrs _apply_exponent!(ρ, ig, dβ, i, j, last(nbrs)) end
-            for l ∈ _holes(i, nbrs) _apply_nothing!(ρ, l, i) end
+            for j ∈ nbrs
+                _apply_exponent!(ρ, ig, dβ, i, j, last(nbrs))
+            end
+            for l ∈ _holes(i, nbrs)
+                _apply_nothing!(ρ, l, i)
+            end
         end
 
         if bond_dimension(ρ) > Dcut
@@ -192,7 +206,9 @@ function _apply_gates(
         end
     end
 
-    if !is_right canonise!(ρ, :right) end
+    if !is_right
+        canonise!(ρ, :right)
+    end
     ρ
 end
 
@@ -200,11 +216,15 @@ end
 $(TYPEDSIGNATURES)
 """
 function MPS(
-    ig::IsingGraph, Dcut::Int, var_ϵ::Number, sweeps::Int, schedule::Vector{<:Number}
+    ig::IsingGraph,
+    Dcut::Int,
+    var_ϵ::Number,
+    sweeps::Int,
+    schedule::Vector{<:Number},
 )
     ρ = HadamardMPS(ig)
     @showprogress "MPS build: " for dβ ∈ schedule
-        ρ =_apply_gates(ρ, ig, Dcut, var_ϵ, sweeps, dβ)
+        ρ = _apply_gates(ρ, ig, Dcut, var_ϵ, sweeps, dβ)
     end
     ρ
 end
@@ -219,14 +239,14 @@ function MPS(
     sweeps::Int,
     dβ::Real,
     β::Real,
-    schedule::Symbol
+    schedule::Symbol,
 )
     ρ = HadamardMPS(ig)
     is_right = true
 
     if schedule == :log
-        k = Int(ceil(log2(β/dβ)))
-        ρ = _apply_gates(ρ, ig, Dcut, var_ϵ, sweeps, β/(2^k))
+        k = Int(ceil(log2(β / dβ)))
+        ρ = _apply_gates(ρ, ig, Dcut, var_ϵ, sweeps, β / (2^k))
         @showprogress "MPS build: " for _ ∈ 1:k
             ρ = purifications(ρ)
             if bond_dimension(ρ) > Dcut
@@ -235,8 +255,8 @@ function MPS(
             end
         end
     elseif schedule == :lin
-        k = ceil(β/dβ)
-        ρ = _apply_gates(ρ, ig, Dcut, var_ϵ, sweeps, β/k)
+        k = ceil(β / dβ)
+        ρ = _apply_gates(ρ, ig, Dcut, var_ϵ, sweeps, β / k)
         ρ0 = copy(ρ)
         @showprogress "MPS build: " for _ ∈ 1:Int(k)
             ρ = purifications(ρ, ρ0)
@@ -246,14 +266,16 @@ function MPS(
             end
         end
     end
-    if !is_right canonise!(ρ, :right) end
+    if !is_right
+        canonise!(ρ, :right)
+    end
     ρ
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function HadamardMPS(::Type{T}, ig::IsingGraph) where T <: Number
+function HadamardMPS(::Type{T}, ig::IsingGraph) where {T<:Number}
     MPS([fill(one(T), r) ./ sqrt(T(r)) for r ∈ values(get_prop(ig, :rank))])
 end
 

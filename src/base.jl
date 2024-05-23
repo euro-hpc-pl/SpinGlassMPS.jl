@@ -1,4 +1,5 @@
-export is_left_normalized, is_right_normalized, MPS, AbstractMPS, verify_bonds, bond_dimension, tensor, proj
+export is_left_normalized,
+    is_right_normalized, MPS, AbstractMPS, verify_bonds, bond_dimension, tensor, proj
 abstract type AbstractMPS{T<:Real} end
 
 
@@ -9,7 +10,7 @@ end
 # consturctors
 MPS(::Type{T}, L::Int) where {T} = MPS(Vector{Array{T,3}}(undef, L))
 MPS(L::Int) = MPS(Float64, L)
-function MPS(states::Vector{Vector{T}}) where {T <: Number}
+function MPS(states::Vector{Vector{T}}) where {T<:Number}
     state_arrays = [reshape(copy(v), (1, length(v), 1)) for v ∈ states]
     MPS(state_arrays)
 end
@@ -64,16 +65,16 @@ function verify_bonds(ψ::AbstractMPS)
 end
 
 is_left_normalized(ψ::MPS) = all(
-    I(size(A, 3)) ≈ @tensor(Id[x, y] := conj(A[α, σ, x]) * A[α, σ, y]; order = (α, σ)) for
-    A ∈ ψ
+    I(size(A, 3)) ≈ @tensor(Id[x, y] := conj(A[α, σ, x]) * A[α, σ, y]; order = (α, σ))
+    for A ∈ ψ
 )
 
 is_right_normalized(ϕ::MPS) = all(
-    I(size(B, 1)) ≈ @tensor(Id[x, y] := B[x, σ, α] * conj(B[y, σ, α]); order = (α, σ)) for
-    B in ϕ
+    I(size(B, 1)) ≈ @tensor(Id[x, y] := B[x, σ, α] * conj(B[y, σ, α]); order = (α, σ))
+    for B in ϕ
 )
 
-function tensor(ψ::MPS, state::Union{Vector, NTuple})
+function tensor(ψ::MPS, state::Union{Vector,NTuple})
     C = I
     for (A, σ) ∈ zip(ψ, state)
         C *= A[:, idx(σ), :]
@@ -87,8 +88,8 @@ function tensor(ψ::MPS)
 
     for σ ∈ all_states(dims)
         Θ[idx.(σ)...] = tensor(ψ, σ)
-    end 
-    Θ    
+    end
+    Θ
 end
 
 
@@ -117,15 +118,15 @@ function _show_sizes(io::IO, dims::Vector, sep::String = " x ", Lcut::Int = 8)
     end
 end
 
-function proj(state, dims::T) where {T <: Union{Vector, NTuple}}
-    P = Matrix{Float64}[] 
+function proj(state, dims::T) where {T<:Union{Vector,NTuple}}
+    P = Matrix{Float64}[]
     for (σ, r) ∈ zip(state, dims)
         v = zeros(r)
-        v[idx(σ)...] = 1.
+        v[idx(σ)...] = 1.0
         push!(P, v * v')
     end
     P
-end 
+end
 
 struct Solution
     energies::Vector{<:Real}
