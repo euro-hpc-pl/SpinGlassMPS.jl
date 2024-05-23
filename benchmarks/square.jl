@@ -16,7 +16,7 @@ max_states = 5 * 10^2
 β = T(10)
 dβ = T(β/10.0)
 
-Dcut = 64
+Dcut = 64 # 32
 var_ϵ = 1E-8
 max_sweeps = 4
 schedule = fill(dβ, Int(ceil(β/dβ)))
